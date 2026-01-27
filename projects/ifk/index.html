@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local AI Story Writer</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.46/lib/index.js"></script>
+    <style>
+        :root {
+            --bg: #1a202c;
+            --container-bg: #2d3748;
+            --text-color: #e2e8f0;
+            --border-color: #4a5568;
+            --button-bg: #63b3ed;
+            --button-hover-bg: #4299e1;
+            --input-bg: #4a5568;
+            --placeholder-color: #a0aec0;
+            --status-color: #90cdf4;
+            --spinner-color: #63b3ed;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: var(--container-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 800px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--text-color);
+            margin-bottom: 25px;
+            font-size: 2.2em;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 1.1em;
+            resize: vertical;
+            min-height: 150px;
+            box-sizing: border-box;
+        }
+
+        textarea::placeholder {
+            color: var(--placeholder-color);
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--button-bg);
+            box-shadow: 0 0 0 2px rgba(99, 179, 237, 0.5);
+        }
+
+        button {
+            padding: 12px 25px;
+            background-color: var(--button-bg);
+            color: var(--bg);
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: var(--button-hover-bg);
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background-color: var(--border-color);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        #output {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 100px;
+            font-size: 1.1em;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            color: var(--text-color);
+        }
+
+        #status-bar {
+            text-align: center;
+            font-size: 0.9em;
+            color: var(--status-color);
+            height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid var(--spinner-color);
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>INF3RK1T</h1>
+    <p>Enter your starting prompt or story fragment below. The AI will continue it!</p>
+
+    <textarea id="prompt-input" placeholder="Start your story here, e.g., 'The old wizard opened the dusty spellbook and read the first line aloud...'"></textarea>
+    
+    <button id="generate-btn" disabled>
+        <span id="button-text">Generate Text</span>
+        <div id="spinner" class="spinner" style="display: none;"></div>
+    </button>
+    
+    <div id="status-bar">Initializing AI engine...</div>
+    
+    <div id="output">Your generated text will appear here.</div>
+</div>
+
+<script type="module">
+    import * as webllm from "https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.46/lib/index.js";
+
+    const promptInput = document.getElementById('prompt-input');
+    const generateBtn = document.getElementById('generate-btn');
+    const buttonText = document.getElementById('button-text');
+    const spinner = document.getElementById('spinner');
+    const statusBar = document.getElementById('status-bar');
+    const outputDiv = document.getElementById('output');
+
+    // Use a fast, instruction-tuned model for text generation
+const modelId = "TinyLlama-1.1B-Chat-v1.0-q4f16_1-MLC";    const engine = new webllm.MLCEngine();
+
+    let isLoadingModel = false;
+
+    // --- UI Update Functions ---
+    function updateStatus(message, showSpinner = false) {
+        statusBar.innerHTML = message;
+        if (showSpinner) {
+            spinner.style.display = 'inline-block';
+            buttonText.innerText = 'Generating...';
+            generateBtn.disabled = true;
+        } else {
+            spinner.style.display = 'none';
+            buttonText.innerText = 'Generate Text';
+            generateBtn.disabled = isLoadingModel; // Only enable if model is loaded and not currently generating
+        }
+    }
+
+    function toggleGenerateButton(enable) {
+        generateBtn.disabled = !enable;
+    }
+
+    // --- AI Engine Initialization ---
+    engine.setInitProgressCallback((report) => {
+        updateStatus(`Loading AI engine: ${Math.round(report.progress * 100)}% - ${report.text}`);
+        if (report.progress < 1) {
+            isLoadingModel = true;
+            toggleGenerateButton(false);
+        } else {
+            isLoadingModel = false;
+        }
+    });
+
+    async function initAI() {
+        try {
+            await engine.reload(modelId, { 
+                gpuDeviceConfig: { powerPreference: "high-performance" } 
+            });
+            updateStatus("AI Engine Ready!");
+            toggleGenerateButton(true);
+        } catch (e) {
+            updateStatus(`Error loading AI: ${e.message}`);
+            console.error("AI Init Error:", e);
+        }
+    }
+
+    // --- Text Generation ---
+    async function generateText() {
+        const userPrompt = promptInput.value.trim();
+        if (!userPrompt) {
+            alert("Please enter a starting prompt!");
+            return;
+        }
+
+        updateStatus("Generating...", true); // Show generating status with spinner
+        toggleGenerateButton(false);
+        outputDiv.innerText = ""; // Clear previous output
+
+        try {
+            // Use a system message to guide the AI
+            const messages = [
+                { role: "system", content: "You are a creative story writer. Continue the user's text naturally and imaginatively." },
+                { role: "user", content: userPrompt }
+            ];
+
+            let fullGeneratedText = "";
+            const chunks = await engine.chat.completions.create({
+                messages: messages,
+                stream: true,
+                temperature: 0.8, // Slightly higher for more creativity
+                max_gen_len: 256, // Limit response length for speed and focus
+                top_p: 0.9,       // Diversity in token choices
+            });
+
+            for await (const chunk of chunks) {
+                const content = chunk.choices[0]?.delta?.content || "";
+                fullGeneratedText += content;
+                outputDiv.innerText = fullGeneratedText;
+            }
+            updateStatus("Generation complete.");
+        } catch (e) {
+            updateStatus(`Error during generation: ${e.message}`);
+            console.error("Generation Error:", e);
+        } finally {
+            toggleGenerateButton(true); // Re-enable button after generation
+            spinner.style.display = 'none'; // Hide spinner
+            buttonText.innerText = 'Generate Text';
+        }
+    }
+
+    // --- Event Listeners ---
+    generateBtn.onclick = generateText;
+
+    // Initialize the AI engine when the page loads
+    initAI();
+</script>
+</body>
+</html>
