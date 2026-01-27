@@ -190,9 +190,23 @@ html, body {
 
     <div class="glass-panel">
         <h1>NETLII</h1>
-        
-        <input type="text" class="search-bar" placeholder="Search">
+        <input type="text" id="home-search" class="search-bar" placeholder="Search">
 
+<script>
+  const homeSearch = document.getElementById('home-search');
+
+  homeSearch.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      const query = homeSearch.value.trim();
+      if (query) {
+        // Store the search term temporarily in the browser's memory
+        localStorage.setItem('autoSearchQuery', query);
+        // Redirect to your unified browser page
+        window.location.href = 'browser.html'; 
+      }
+    }
+  });
+</script>
        <div class="nav-row">
             <a href="/projects.html" class="nav-item">
                 <div class="icon-circle">🎮</div>
@@ -209,7 +223,7 @@ html, body {
                 <span class="icon-label">Settings</span>
             </a>
 
-            <a href="/movies/index.html" class="nav-item">
+            <a href="/movietv/" class="nav-item">
                 <div class="icon-circle">🍿</div>
                 <span class="icon-label">Movies</span>
             </a>
