@@ -133,7 +133,7 @@ const tabItem = (tab) => {
             if (tabs.length) focusTab(tabs[tabs.length - 1]);
             else
               setTimeout(() => {
-                addTab("uvsearch.rhw.one");
+                addTab("netlii.pages.dev/movies");
               }, 100);
           }
 
@@ -248,7 +248,7 @@ async function addTab(link) {
   focusTab(tab);
 }
 
-addTab("abc123math.onrender.com/movies");
+addTab("netlii.pages.dev/movies");
 
 const urlParams = new URLSearchParams(window.location.search);
 
