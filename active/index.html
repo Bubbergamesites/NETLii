@@ -242,5 +242,26 @@
       });
       document.addEventListener("click", () => overlay.classList.remove("active"));
     </script>
+    <script>window.addEventListener('load', () => {
+  // Check if there is a pending search from the homepage
+  const pendingSearch = localStorage.getItem('autoSearchQuery');
+
+  if (pendingSearch) {
+    const browserInput = document.getElementById('url-input');
+    const browserForm = document.getElementById('url-form');
+
+    if (browserInput && browserForm) {
+      // 1. Fill the browser's URL bar with the text from the homepage
+      browserInput.value = pendingSearch;
+
+      // 2. Clear the memory so it doesn't search again if you refresh
+      localStorage.removeItem('autoSearchQuery');
+
+      // 3. Automatically trigger the "Go" / "Submit" action
+      browserForm.dispatchEvent(new Event('submit'));
+    }
+  }
+});
+    </script>
   </body>
 </html>
