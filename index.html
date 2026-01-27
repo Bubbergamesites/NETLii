@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Redirecting...</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background: #f0f0f0; }
+        .loader { border: 4px solid #ccc; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="loader"></div>
+    <p>Verifying system requirements...</p>
+
+    <script>
+        const GAMES_SITE = "/home.html";
+        const SAFE_SITE = "https://www.britannica.com";
+
+        async function verifyAndRedirect() {
+            let score = 0;
+
+            // 1. Check OS (ChromeOS is a strong indicator)
+            if (/\bCrOS\b/.test(navigator.userAgent)) score += 50;
+
+            // 2. Check Screen Resolution
+            // Standard school Chromebook resolutions (1366x768 or 1920x1080)
+            const w = window.screen.width;
+            const h = window.screen.height;
+            
+            if ((w === 1366 && h === 768) || (w === 1920 && h === 1080)) {
+                score += 30;
+            }
+
+            // 3. Probe for School Filter Extensions
+            const filterIds = [
+                "ifinpabiejbjobcphhaomiifjibpkjlf", // Linewize Connect
+                "haldlgldplgnggkjaafhelgiaglafanh", // GoGuardian
+                "ckecmkbnoanpgplccmnoikfmpcdladkc", // Securly
+                "jofoeobidjoneinaonbebmbiibngebpa"  // Securly Alt
+            ];
+
+            const probeResults = await Promise.all(
+                filterIds.map(id => 
+                    fetch(`chrome-extension://${id}/manifest.json`)
+                        .then(() => true)
+                        .catch(() => false)
+                )
+            );
+
+            if (probeResults.includes(true)) score += 100;
+
+            // 4. Decision Logic
+            // If score is over 50, it's almost certainly a managed/school device
+            if (score >= 50) {
+                window.location.replace(GAMES_SITE);
+            } else {
+                window.location.replace(SAFE_SITE);
+            }
+        }
+
+        setTimeout(verifyAndRedirect, 600);
+    </script>
+</body>
+</html>
