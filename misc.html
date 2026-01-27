@@ -1,63 +1,231 @@
 <!DOCTYPE html>
 <html lang="en-US">
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <title>Miscellaneous | 0K3A</title>
+<head>
+    <title>NETLII | Settings</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    
     <style>
-      .text-center {
-        text-align: center;
-      }
+        /* BASE STYLES & BACKGROUND */
+        html, body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            font-family: 'Nunito', sans-serif;
+            background: url('netlii-bg.avif') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #000;
+        }
+
+        /* TOP BRANDING (From Sketch) */
+        .header {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            margin: 0;
+            letter-spacing: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        /* SETTINGS CONTAINER */
+        .settings-scroll-area {
+            width: 90%;
+            max-width: 700px;
+            margin: 20px 0 120px 0; /* Space for bottom dock */
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* GLASS PANELS */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 25px;
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        p {
+            font-size: 0.9rem;
+            line-height: 1.4;
+            color: #333;
+        }
+
+        /* INPUTS & BUTTONS (Pill shapes from sketch) */
+        input[type="url"], input[type="text"] {
+            width: 100%;
+            height: 3rem;
+            border-radius: 50px;
+            border: 2px solid #000;
+            padding: 0 20px;
+            font-size: 1rem;
+            outline: none;
+            background: rgba(255, 255, 255, 0.8);
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background-color: #000;
+            color: #fff;
+            border: 2px solid #000;
+            border-radius: 50px;
+            padding: 10px 20px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 0.8rem;
+        }
+
+        button:hover {
+            background-color: transparent;
+            color: #000;
+        }
+
+        /* Checkbox Styling */
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 200px; /* Custom sizing not standard, usually handled via transform */
+            transform: scale(1.5);
+            cursor: pointer;
+        }
+
+        /* BOTTOM DOCK (From Sketch) */
+        .bottom-nav {
+            position: fixed;
+            bottom: 30px;
+            display: flex;
+            gap: 40px;
+            background: rgba(0, 0, 0, 0.05);
+            padding: 15px 40px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .nav-item {
+            text-decoration: none;
+            color: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.7rem;
+            font-weight: 800;
+            transition: 0.2s;
+        }
+
+        .nav-item:hover { transform: translateY(-5px); }
+
+        .circle {
+            width: 45px;
+            height: 45px;
+            border: 2px solid #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            background: white;
+        }
+
+        @media screen and (max-width: 600px) {
+            .header h1 { font-size: 2rem; }
+            .bottom-nav { gap: 15px; padding: 10px 20px; }
+        }
     </style>
-  </head>
-  <body style="background-color: #345beb; color: #f7f00c; font-family: sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;">
-    <h2 style="text-align: center; font-size: 2em; margin-bottom: 1em;">Miscellaneous stuff</h2>
-    <div style="width: 100%; max-width: 600px; margin-bottom: 2em;">
-      <div>
-        <h1>about:blank</h1>
-        <div>
-          <p>Enter a URL you want to be opened in a about:blank page below:</p>
-          <p><input id="url-target" type="url" pattern="https://.*" placeholder="Enter a website URL" autocomplete="on" style="width: 100%; padding: 10px; border: none; border-radius: 10px; background-color: #f7f00c; color: black;" /></p>
-          <p>Note this will not work with some websites, but you can copy the link of this website and put it in for extra privacy.</p>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>NETLII</h1>
+    </div>
+
+    <div class="settings-scroll-area">
+        
+        <div class="glass-panel">
+            <h2>About:Blank</h2>
+            <p>Enter a URL to open in a private about:blank page:</p>
+            <input id="url-target" type="url" placeholder="https://website.com" autocomplete="on" />
+            <button id="create">CREATE PAGE</button>
         </div>
-      </div>
-      <div style="display: flex; justify-content: space-between; margin-top: 1em;">
-        <button id="create" style="padding: 10px 20px; border: none; border-radius: 10px; background-color: #f7f00c; color: #ffffff;">Create page</button>
-      </div>
-    </div>
-    <div style="width: 100%; max-width: 600px;">
-      <div>
-        <h1>Tab Cloaker</h1>
-        <p>Enter a new tab title or a image URL below. What you set will be used on the whole site.</p>
-        <p>
-          <input id="userinput" type="url" placeholder="Enter a title or image URL" autocomplete="on" style="width: 100%; padding: 10px; border: none; border-radius: 10px; background-color: #2c2c2c; color: #ffffff;" />
-        </p>
-        <p id="console-output"></p>
-      </div>
-      <div class="button-wrapper" style="display: flex; justify-content: space-between; margin-top: 1em;">
-        <button onclick="changeTabTitle();" style="padding: 10px 20px; border: none; border-radius: 10px; background-color: #f7f00c; color: black;">Set Title</button>
-        <button onclick="changeTabIcon();" style="padding: 10px 20px; border: none; border-radius: 10px; background-color: #f7f00c; color: black;">Set Icon</button>
-        <button onclick="resetTabSettings();" style="padding: 10px 20px; border: none; border-radius: 10px; background-color: #f7f00c; color: black;">Reset</button>
-      </div>
-    </div>
-    <div style="width: 100%; max-width: 600px; margin-bottom: 2em;">
-      <div>
-        <h1>Ads consent</h1>
-        <div>
-          <p>Sometimes, ads are shown to support the creator, if you would not like to see ads or it slows down your computer too much, you can disable them here.</p>
-          <label for="adConsent">Do not show ads at all:</label>
-          <input type="checkbox" id="adConsent" name="adConsent">
+
+        <div class="glass-panel">
+            <h2>Tab Cloaker</h2>
+            <p>Set a custom title or icon for the browser tab to hide your activity.</p>
+            <input id="userinput" type="text" placeholder="New Title or Image URL" autocomplete="on" />
+            <div class="button-group">
+                <button onclick="changeTabTitle();">SET TITLE</button>
+                <button onclick="changeTabIcon();">SET ICON</button>
+                <button onclick="resetTabSettings();">RESET</button>
+            </div>
+            <p id="console-output" style="font-size: 0.7rem; color: #666;"></p>
         </div>
-      </div>
+
+        <div class="glass-panel">
+            <h2>Ads & Performance</h2>
+            <p>Disable ads to improve performance or browsing privacy.</p>
+            <div class="checkbox-row">
+                <input type="checkbox" id="adConsent" name="adConsent">
+                <label for="adConsent">Do not show ads</label>
+            </div>
+        </div>
+
     </div>
-    <p style="text-align: center; margin-top: 2em;">
-      <a href="/index.html" style="text-decoration: none;">
-        <button style="cursor: pointer; background-color: #f7f00c; border: none; color: black; padding: 15px 32px; text-decoration: none; display: inline-block; font-size: 16px; border-radius: 20px; margin-top: 5px;">
-          Go to the homepage
-        </button>
-      </a>
-    </p>
+
+    <div class="bottom-nav">
+        <a href="/index.html" class="nav-item">
+            <div class="circle">🕹️</div>
+            <span>GAMES</span>
+        </a>
+        <a href="/apps/" class="nav-item">
+            <div class="circle">📱</div>
+            <span>APPS</span>
+        </a>
+        <a href="/settings.html" class="nav-item">
+            <div class="circle">⚙️</div>
+            <span>SETTINGS</span>
+        </a>
+        <a href="/movies/" class="nav-item">
+            <div class="circle">🎬</div>
+            <span>MOVIES</span>
+        </a>
+    </div>
+
     <script src="/js/misc.js"></script>
     <script src="/js/main.js"></script>
-  </body>
+</body>
 </html>
