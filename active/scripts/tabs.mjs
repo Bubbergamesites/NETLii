@@ -133,7 +133,7 @@ const tabItem = (tab) => {
             if (tabs.length) focusTab(tabs[tabs.length - 1]);
             else
               setTimeout(() => {
-                addTab("uvsearch.rhw.one");
+                addTab("duckduckgo.com");
               }, 100);
           }
 
@@ -205,8 +205,15 @@ function focusTab(tab) {
   selectedTab = tab;
   tab.view.style.display = "block";
 
-  // Update URL bar
-  urlInput.value = tab.url;
+  // --- UPDATED LOGIC HERE ---
+  // Only update the URL bar if there isn't a manual search currently being typed/transferred
+  const pendingSearch = localStorage.getItem('autoSearchQuery');
+  if (pendingSearch) {
+      urlInput.value = pendingSearch;
+  } else {
+      urlInput.value = tab.url;
+  }
+  // ---------------------------
 
   tabList.children[tabs.indexOf(tab)].classList.add("selectedTab");
 }
@@ -248,7 +255,7 @@ async function addTab(link) {
   focusTab(tab);
 }
 
-addTab("duckduckgo.com");
+addTab("");
 
 const urlParams = new URLSearchParams(window.location.search);
 
