@@ -205,8 +205,13 @@ function focusTab(tab) {
   selectedTab = tab;
   tab.view.style.display = "block";
 
-  // Update URL bar
-  urlInput.value = tab.url;
+  // CHECK: If the user just arrived from the home page, don't overwrite the bar yet
+  const pendingSearch = localStorage.getItem('autoSearchQuery');
+  if (!pendingSearch) {
+      urlInput.value = tab.url;
+  } else {
+      urlInput.value = pendingSearch;
+  }
 
   tabList.children[tabs.indexOf(tab)].classList.add("selectedTab");
 }
