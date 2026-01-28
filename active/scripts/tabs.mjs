@@ -205,36 +205,40 @@ function focusTab(tab) {
   selectedTab = tab;
   tab.view.style.display = "block";
 
-  // CHECK: If the user just arrived from the home page, don't overwrite the bar yet
-  const pendingSearch = localStorage.getItem('autoSearchQuery');
-  if (!pendingSearch) {
-      urlInput.value = tab.url;
-  } else {
-      urlInput.value = pendingSearch;
-  }
+  // Update URL bar
+  urlInput.value = tab.url;
 
   tabList.children[tabs.indexOf(tab)].classList.add("selectedTab");
 }
 
 async function addTab(link) {
-  // --- NEW LOGIC START ---
-  const pendingSearch = localStorage.getItem('autoSearchQuery');
-  
-  // If we have a pending search AND this is the very first tab being made
-  if (pendingSearch && tabs.length === 0) {
-      link = pendingSearch;
-      // We don't remove the item yet because focusTab still needs to check it
-  }
-  // --- NEW LOGIC END ---
+  let url;
 
-  let url = await getUV(link);
+  url = await getUV(link);
+
   let tab = {};
-  
-  tab.title = "Loading...";
-  tab.url = search(link); // This ensures the internal tab URL matches your search
+
+  tab.title = decodeURIComponent(
+    __uv$config.decodeUrl(url.substring(url.lastIndexOf("/") + 1))
+  ).replace(/^https?:\/\//, "");
+  tab.url = search(link);
   tab.proxiedUrl = url;
-  // ... rest of your existing tab code ...
-}
+  tab.icon = null;
+  tab.view = tabFrame(tab);
+  tab.item = tabItem(tab);
+
+  tab.view.addEventListener("load", () => {
+    let links = tab.view.contentWindow.document.querySelectorAll("a");
+    links.forEach((element) => {
+      element.addEventListener("click", (event) => {
+        let isTargetTop = event.target.target === "_top";
+        if (isTargetTop) {
+          event.preventDefault();
+          addTab(event.target.href);
+        }
+      });
+    });
+  });
 
   tabs.push(tab);
 
