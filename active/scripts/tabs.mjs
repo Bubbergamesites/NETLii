@@ -217,33 +217,24 @@ function focusTab(tab) {
 }
 
 async function addTab(link) {
-  let url;
+  // --- NEW LOGIC START ---
+  const pendingSearch = localStorage.getItem('autoSearchQuery');
+  
+  // If we have a pending search AND this is the very first tab being made
+  if (pendingSearch && tabs.length === 0) {
+      link = pendingSearch;
+      // We don't remove the item yet because focusTab still needs to check it
+  }
+  // --- NEW LOGIC END ---
 
-  url = await getUV(link);
-
+  let url = await getUV(link);
   let tab = {};
-
-  tab.title = decodeURIComponent(
-    __uv$config.decodeUrl(url.substring(url.lastIndexOf("/") + 1))
-  ).replace(/^https?:\/\//, "");
-  tab.url = search(link);
+  
+  tab.title = "Loading...";
+  tab.url = search(link); // This ensures the internal tab URL matches your search
   tab.proxiedUrl = url;
-  tab.icon = null;
-  tab.view = tabFrame(tab);
-  tab.item = tabItem(tab);
-
-  tab.view.addEventListener("load", () => {
-    let links = tab.view.contentWindow.document.querySelectorAll("a");
-    links.forEach((element) => {
-      element.addEventListener("click", (event) => {
-        let isTargetTop = event.target.target === "_top";
-        if (isTargetTop) {
-          event.preventDefault();
-          addTab(event.target.href);
-        }
-      });
-    });
-  });
+  // ... rest of your existing tab code ...
+}
 
   tabs.push(tab);
 
