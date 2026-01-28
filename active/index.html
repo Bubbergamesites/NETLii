@@ -243,18 +243,25 @@
       document.addEventListener("click", () => overlay.classList.remove("active"));
     </script>
     <script>
-        const searchInput = document.getElementById('searchInput');
+      window.addEventListener('load', () => {
+  // Check if there is a pending search from the homepage
+  const pendingSearch = localStorage.getItem('autoSearchQuery');
 
-searchInput.addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') {
-        const query = searchInput.value.trim();
-        if (query) {
-            // Save the query in LocalStorage so the browser can read it after the page loads
-            localStorage.setItem('pendingSearch', query);
-            // Redirect to your browser page (change 'browser.html' to your actual filename)
-            window.location.href = 'browser.html'; 
-        }
+  if (pendingSearch) {
+    const browserInput = document.getElementById('url-input');
+    const browserForm = document.getElementById('url-form');
+
+    if (browserInput && browserForm) {
+      // 1. Fill the browser's URL bar with the text from the homepage
+      browserInput.value = pendingSearch;
+
+      // 2. Clear the memory so it doesn't search again if you refresh
+      localStorage.removeItem('autoSearchQuery');
+
+      // 3. Automatically trigger the "Go" / "Submit" action
+      browserForm.dispatchEvent(new Event('submit'));
     }
+  }
 });
     </script>
   </body>
