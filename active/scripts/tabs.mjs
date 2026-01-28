@@ -133,7 +133,7 @@ const tabItem = (tab) => {
             if (tabs.length) focusTab(tabs[tabs.length - 1]);
             else
               setTimeout(() => {
-                addTab("uvsearch.rhw.one");
+                addTab("duckduckgo.com");
               }, 100);
           }
 
