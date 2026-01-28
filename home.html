@@ -193,19 +193,8 @@ html, body {
         <input type="text" id="home-search" class="search-bar" placeholder="Search">
 
 <script>
-  const homeSearch = document.getElementById('home-search');
-
-  homeSearch.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      const query = homeSearch.value.trim();
-      if (query) {
-        // Store the search term temporarily in the browser's memory
-        localStorage.setItem('autoSearchQuery', query);
-        // Redirect to your unified browser page
-        window.location.href = '/active/'; 
-      }
-    }
-  });
+ localStorage.setItem('autoSearchQuery', searchInput.value);
+window.location.href = '/active/';
 </script>
        <div class="nav-row">
             <a href="/projects.html" class="nav-item">
