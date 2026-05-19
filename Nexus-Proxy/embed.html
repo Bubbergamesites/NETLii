@@ -144,8 +144,45 @@
             }
         }
 
-        async function initialize(){const targetUrl=window.location.hash.substring(1);const skipLoading=new URLSearchParams(window.location.search).get('skip')!==null;const basePath=location.pathname.replace(/[^/]*$/,'')+'/';if(!targetUrl)return showError('noUrl');if(!isValidUrl(targetUrl))return showError('invalidUrl',targetUrl);if(skipLoading){els.skipBtn.style.display='inline-block';els.skipBtn.onclick=showContent}
-            try{await registerServiceWorker();const scramjet=await initializeScramjet();await initializeConnection();els.loadingTitle.textContent='Loading Site';els.loadingUrl.textContent=targetUrl;const activeFrame=scramjet.createFrame();activeFrame.frame.id='embed-frame';els.iframeContainer.appendChild(activeFrame.frame);activeFrame.frame.addEventListener('load',showContent);setTimeout(()=>{els.skipBtn.style.display='inline-block';els.skipBtn.onclick=showContent},2000);activeFrame.go(targetUrl)}catch(err){console.error('Embed Error:',err);showError(getErrorType(err.message),targetUrl)}}
+        async function initialize(){
+            const targetUrl=window.location.hash.substring(1);
+            const skipLoading=new URLSearchParams(window.location.search).get('skip')!==null;
+            const basePath=location.pathname.replace(/[^/]*$/,'')+'/';
+            
+            if(!targetUrl)return showError('noUrl');
+            if(!isValidUrl(targetUrl))return showError('invalidUrl',targetUrl);
+            if(skipLoading){els.skipBtn.style.display='inline-block';els.skipBtn.onclick=showContent}
+            
+            try{
+                await registerServiceWorker();
+                const scramjet=await initializeScramjet();
+                await initializeConnection();
+                
+                els.loadingTitle.textContent='Loading Site';
+                els.loadingUrl.textContent=targetUrl;
+                
+                // CRITICAL CHANGE: Generate the Scramjet Frame
+                const activeFrame=scramjet.createFrame();
+                activeFrame.frame.id='embed-frame';
+                
+                // Add permissions & disable typical restrictive limits
+                activeFrame.frame.setAttribute('allow', 'geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb; fullscreen; display-capture; autoplay');
+                activeFrame.frame.setAttribute('sandbox', 'allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts allow-top-navigation allow-top-navigation-by-user-activation allow-downloads');
+                
+                els.iframeContainer.appendChild(activeFrame.frame);
+                activeFrame.frame.addEventListener('load',showContent);
+                
+                setTimeout(()=>{
+                    els.skipBtn.style.display='inline-block';
+                    els.skipBtn.onclick=showContent
+                },2000);
+                
+                activeFrame.go(targetUrl);
+            }catch(err){
+                console.error('Embed Error:',err);
+                showError(getErrorType(err.message),targetUrl);
+            }
+        }
         els.retryBtn.onclick=()=>location.reload();
 
         // Wait for scripts to load before initializing
