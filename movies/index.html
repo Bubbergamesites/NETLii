@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <base href="https://netlii.pages.dev/">
+    <base href="https://netlii-games.pages.dev/">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NETLII | Movies & TV</title>
@@ -331,10 +331,9 @@
                 <input type="text" class="search-input" id="searchInput" placeholder="Search movies and TV shows...">
             </div>
             <div class="filter-buttons">
-                <button class="filter-btn active" data-filter="popular">Popular</button>
+                <button class="filter-btn active" data-filter="now_playing">Now Playing</button>
                 <button class="filter-btn" data-filter="trending">Trending</button>
                 <button class="filter-btn" data-filter="top_rated">Top Rated</button>
-                <button class="filter-btn" data-filter="now_playing">Now Playing</button>
                 <button class="filter-btn" data-filter="upcoming">Upcoming</button>
             </div>
         </div>
@@ -385,7 +384,7 @@
         const k = "2713804610e1e236b1cf44bfac3a7776",
             b = "https://api.themoviedb.org/3",
             i = "https://image.tmdb.org/t/p/w500";
-        let f = "popular",
+        let f = "now_playing",
             p = 1,
             t = null,
             s = null;
@@ -538,9 +537,9 @@
         function updatePlayer(type, id, s = 1, e = 1) {
             // VidLink Path Structure: /type/id/season/episode
             if (type === 'tv') {
-                ifm.src = `/Nexus-Proxy/embed#https://iframe-thingy.pages.dev/vidrock.ru/tv/${id}/${s}/${e}`;
+                ifm.src = `https://vidrock.ru/tv/${id}/${s}/${e}`;
             } else {
-                ifm.src = `/Nexus-Proxy/embed#https://iframe-thingy.pages.dev/https://vidrock.ru/movie/${id}`;
+                ifm.src = `https://vidrock.ru/movie/${id}`;
             }
         }
 
