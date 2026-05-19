@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gahingus Im Falling! THE GAME</title>
+    <style>
+        body { margin: 0; background: #080500; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: 'Courier New', Courier, monospace; overflow: hidden; }
+        #game-container { position: relative; width: 450px; height: 750px; border: 8px solid #333; border-radius: 10px; box-shadow: 0 0 50px #ffcc0044; }
+        canvas { background: #1a0f0a; display: block; }
+        
+        .arcade-hud { position: absolute; top: 0; width: 100%; height: 60px; background: rgba(0,0,0,0.7); border-bottom: 2px solid #ffcc00; display: flex; justify-content: space-around; align-items: center; color: #fff; z-index: 5; }
+        .stat { text-align: center; }
+        .label { font-size: 10px; color: #ffcc00; display: block; }
+        .value { font-size: 18px; font-weight: bold; }
+
+        #ability-wrapper { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 250px; text-align: center; z-index: 5; }
+        #ability-bar { width: 100%; height: 14px; background: #222; border: 2px solid #00f2ff; border-radius: 7px; overflow: hidden; }
+        #ability-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #0088ff, #00f2ff); transition: width 0.1s; }
+        
+        .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.9); display: none; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; z-index: 20; }
+        button { background: #ffcc00; border: none; padding: 15px 40px; font-family: 'Courier New'; font-weight: bold; font-size: 20px; cursor: pointer; border-radius: 5px; box-shadow: 0 5px 0 #b38f00; }
+        button:active { transform: translateY(3px); box-shadow: 0 2px 0 #b38f00; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="arcade-hud">
+        <div class="stat"><span class="label">DISTANCE</span><span id="depth" class="value">0</span>m</div>
+        <div class="stat"><span class="label">SCORE</span><span id="score" class="value">0</span></div>
+        <div class="stat"><span class="label">MULTI</span><span id="multi" class="value">x1.0</span></div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="ability-wrapper">
+        <span class="label" style="margin-bottom: 5px;">SHIELD READY [UP ARROW]</span>
+        <div id="ability-bar"><div id="ability-fill"></div></div>
+    </div>
+    
+    <div id="death-screen" class="overlay">
+        <h1 style="color: #ff0044; font-size: 40px;">Spiked!</h1>
+        <p>FINAL SCORE: <span id="final-score">0</span></p>
+        <button onclick="reset()">INSERT COIN (RETRY)</button>
+    </div>
+
+    <div id="win-screen" class="overlay">
+        <h1 style="color: #00ffcc; font-size: 40px;">CHEESE GOD</h1>
+        <p>YOU SURVIVED THE PIT!</p>
+        <button onclick="reset()">PLAY AGAIN</button>
+    </div>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = 450; canvas.height = 750;
+
+let depth = 0, score = 0, active = true, obstacles = [], keys = {};
+let gameSpeed = 5, wallWidth = 30, shake = 0;
+const WIN_GOAL = 10000;
+
+// Ability Stats
+let boostActive = false, boostCooldown = 0, boostDuration = 0;
+const MAX_COOLDOWN = 600, MAX_DURATION = 120;
+
+// Cheese State
+const cheese = { active: false, opacity: 0, x: 0, y: canvas.height, width: canvas.width, height: 150 };
+
+// Load Images
+const hamsterImg = new Image();
+hamsterImg.src = 'https://raw.githubusercontent.com/Bubbergamesites/assets-and-stuff/refs/heads/main/gahingus-removebg-preview.png';
+
+const shreddedCheeseImg = new Image();
+// This is a placeholder. You'll need to replace this with the URL of your shredded cheese image.
+shreddedCheeseImg.src = 'https://media.istockphoto.com/id/619669894/photo/grated-pizza-cheese.jpg?s=612x612&w=0&k=20&c=U_5rFN_aQtB5LRAv_b2ual_hwvhaSI1D05sx5L_tghM='; // REPLACE THIS URL
+
+
+const player = { x: 200, y: 150, w: 80, h: 80, speed: 6 };
+
+window.addEventListener('keydown', e => keys[e.code] = true);
+window.addEventListener('keyup', e => keys[e.code] = false);
+
+function drawSaw(ctx, ob) {
+    ctx.save();
+    ctx.translate(ob.x + ob.w/2, ob.y + ob.h/2);
+    ctx.rotate(ob.angle);
+    const gradient = ctx.createRadialGradient(0, 0, 5, 0, 0, ob.w/2);
+    gradient.addColorStop(0, '#666'); gradient.addColorStop(1, '#999');
+    ctx.fillStyle = gradient;
+    for(let i=0; i<12; i++) {
+        ctx.rotate(Math.PI/6); ctx.beginPath();
+        ctx.moveTo(0, -ob.h/2 - 10); ctx.lineTo(10, -ob.h/4); ctx.lineTo(-10, -ob.h/4);
+        ctx.fill();
+    }
+    ctx.beginPath(); ctx.arc(0, 0, ob.w/2, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = "#333"; ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+}
+
+function drawSpike(ctx, ob) {
+    ctx.fillStyle = "#4a4a4a"; ctx.beginPath();
+    if (ob.side === 'left') {
+        ctx.moveTo(ob.x - wallWidth, ob.y); ctx.lineTo(ob.x + ob.w, ob.y + 20); ctx.lineTo(ob.x - wallWidth, ob.y + 40);
+        ctx.fill(); ctx.strokeStyle = "#888"; ctx.stroke();
+    } else {
+        ctx.moveTo(ob.x + ob.w + wallWidth, ob.y); ctx.lineTo(ob.x, ob.y + 20); ctx.lineTo(ob.x + ob.w + wallWidth, ob.y + 40);
+        ctx.fill(); ctx.strokeStyle = "#888"; ctx.stroke();
+    }
+}
+
+function spawnObstacle() {
+    if (depth >= WIN_GOAL) return; 
+    if (depth < WIN_GOAL - 1000) wallWidth = Math.min(100, 30 + (depth / 150)); 
+    const type = Math.random();
+    if (type < 0.85) {
+        const isLeft = Math.random() > 0.5;
+        const w = 50 + Math.random() * 80;
+        obstacles.push({ x: isLeft ? wallWidth : canvas.width-wallWidth-w, y: canvas.height, w, h: 40, type: 'wall', side: isLeft ? 'left' : 'right' });
+    } else {
+        obstacles.push({ x: Math.random() * (canvas.width-120)+60, y: canvas.height, w: 45, h: 45, vx: (Math.random()-0.5)*8, type: 'saw', angle: 0 });
+    }
+}
+
+function reset() {
+    depth = 0; score = 0; active = true; obstacles = []; gameSpeed = 5; wallWidth = 30;
+    boostCooldown = 0; boostActive = false; player.x = 200; player.y = 150;
+    cheese.active = false; cheese.opacity = 0; cheese.y = canvas.height;
+    document.querySelectorAll('.overlay').forEach(el => el.style.display = 'none');
+    requestAnimationFrame(loop);
+}
+
+function loop() {
+    if (!active) return;
+
+    if (keys['ArrowUp'] && boostCooldown <= 0 && !cheese.active) {
+        boostActive = true; boostDuration = MAX_DURATION; boostCooldown = MAX_COOLDOWN;
+        shake = 15;
+    }
+
+    let currentMoveSpeed = player.speed;
+    let currentFallSpeed = gameSpeed;
+
+    if (boostActive) {
+        currentFallSpeed *= 2.2; currentMoveSpeed *= 1.3;
+        boostDuration--;
+        if (boostDuration <= 0) boostActive = false;
+    } else if (boostCooldown > 0) {
+        boostCooldown--;
+    }
+
+    // Winning Logic - Cheese appears and hamster falls into it
+    if (depth > WIN_GOAL) {
+        cheese.active = true;
+        currentFallSpeed = 0; 
+        player.y += 2.5; // Hamster falls
+        
+        // Cheese slides up from the bottom
+        if (cheese.y > canvas.height - cheese.height) { // Stop when it's fully visible at the bottom
+            cheese.y -= 3; 
+        } else {
+            cheese.opacity = 1; // Once it's in place, it's fully opaque
+        }
+        
+        if (cheese.opacity < 1) cheese.opacity += 0.015;
+        
+        // Final Win Trigger when hamster lands on the cheese
+        if (player.y >= cheese.y - player.h/2) { // Adjusted for hamster to land ON the cheese
+            active = false;
+            document.getElementById('win-screen').style.display = 'flex';
+        }
+    }
+
+    document.getElementById('ability-fill').style.width = boostCooldown > 0 ? `${((MAX_COOLDOWN - boostCooldown) / MAX_COOLDOWN) * 100}%` : '100%';
+    document.getElementById('ability-fill').style.background = boostCooldown > 0 ? '#444' : '#00f2ff';
+    document.getElementById('depth').innerText = Math.floor(depth);
+    document.getElementById('score').innerText = Math.floor(score);
+    document.getElementById('multi').innerText = cheese.active ? "MAX" : `x${(gameSpeed/5).toFixed(1)}`;
+
+    if (!cheese.active) {
+        gameSpeed += 0.0015;
+        depth += (currentFallSpeed / 5);
+        score += (currentFallSpeed / 10);
+    }
+
+    if (keys['ArrowLeft'] || keys['KeyA']) player.x -= currentMoveSpeed;
+    if (keys['ArrowRight'] || keys['KeyD']) player.x += currentMoveSpeed;
+    player.x = Math.max(wallWidth, Math.min(canvas.width - player.w - wallWidth, player.x));
+
+    obstacles.forEach((ob, i) => {
+        ob.y -= currentFallSpeed;
+        if (ob.type === 'saw') {
+            ob.x += ob.vx; ob.angle += 0.4;
+            if (ob.x < wallWidth || ob.x > canvas.width - ob.w - wallWidth) ob.vx *= -1;
+        }
+
+        const margin = 30; //
+        if (player.x + margin < ob.x + ob.w && player.x + player.w - margin > ob.x &&
+            player.y + margin < ob.y + ob.h && player.y + player.h - margin > ob.y && !cheese.active) {
+            if (boostActive) { obstacles.splice(i, 1); score += 500; shake = 10; }
+            else { active = false; document.getElementById('final-score').innerText = Math.floor(score); document.getElementById('death-screen').style.display = 'flex'; }
+        }
+        if (ob.y < -100) obstacles.splice(i, 1);
+    });
+
+    if (Math.random() < 0.12) spawnObstacle();
+
+    ctx.save();
+    if (shake > 0) { ctx.translate(Math.random()*shake-shake/2, Math.random()*shake-shake/2); shake *= 0.9; }
+
+    ctx.fillStyle = "#110a05"; ctx.fillRect(0,0, canvas.width, canvas.height);
+    ctx.fillStyle = "#1a0f0a";
+    for(let i=0; i<10; i++) { 
+        let yPos = (i * 100 - (depth * 2) % 100); 
+        ctx.fillRect(0, yPos, canvas.width, 2); 
+    }
+
+    const wallGrad = ctx.createLinearGradient(0,0,wallWidth,0);
+    wallGrad.addColorStop(0, "#222"); wallGrad.addColorStop(1, "#443322");
+    ctx.fillStyle = wallGrad;
+    ctx.fillRect(0, 0, wallWidth, canvas.height);
+    ctx.save(); ctx.translate(canvas.width, 0); ctx.scale(-1,1); ctx.fillRect(0, 0, wallWidth, canvas.height); ctx.restore();
+
+    obstacles.forEach(ob => { if (ob.type === 'saw') drawSaw(ctx, ob); else drawSpike(ctx, ob); });
+
+    // Draw Shredded Cheese Image
+    if (cheese.active && shreddedCheeseImg.complete) { // Only draw if image is loaded
+        ctx.save();
+        ctx.globalAlpha = cheese.opacity;
+        // Position and scale to fill between walls
+        let cheeseDrawX = wallWidth;
+        let cheeseDrawWidth = canvas.width - (wallWidth * 2);
+        // Calculate aspect ratio to maintain image proportions
+        let aspectRatio = shreddedCheeseImg.height / shreddedCheeseImg.width;
+        let cheeseDrawHeight = cheeseDrawWidth * aspectRatio;
+
+        ctx.drawImage(shreddedCheeseImg, cheeseDrawX, cheese.y, cheeseDrawWidth, cheeseDrawHeight);
+        ctx.restore();
+    }
+
+    if (boostActive && !cheese.active) {
+        ctx.shadowBlur = 20; ctx.shadowColor = "#00f2ff"; ctx.strokeStyle = "#00f2ff"; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(player.x + player.w/2, player.y + player.h/2, 45, 0, Math.PI*2); ctx.stroke();
+    }
+    ctx.drawImage(hamsterImg, player.x, player.y, player.w, player.h);
+    ctx.restore();
+    requestAnimationFrame(loop);
+}
+
+// Make sure both images are loaded before starting the game
+let imagesLoaded = 0;
+const totalImages = 2;
+
+function imageLoadHandler() {
+    imagesLoaded++;
+    if (imagesLoaded === totalImages) {
+        requestAnimationFrame(loop);
+    }
+}
+
+hamsterImg.onload = imageLoadHandler;
+shreddedCheeseImg.onload = imageLoadHandler;
+// If images fail to load, you might want a fallback or error message
+hamsterImg.onerror = () => { console.error("Failed to load hamster image"); imageLoadHandler(); };
+shreddedCheeseImg.onerror = () => { console.error("Failed to load shredded cheese image"); imageLoadHandler(); };
+</script>
+</body>
+</html>

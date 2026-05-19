@@ -8,106 +8,142 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
-        /* UPDATED GLOBAL BACKGROUND STYLE */
-html, body {
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    font-family: 'Nunito', sans-serif;
-    /* This sets your uploaded image as the fixed background for every page */
-    background: url('netlii-bg.avif') no-repeat center center fixed;
-    background-size: cover;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    color: #000; /* Monochrome text to match the new background */
-}
-        /* BASE STYLES & BACKGROUND */
+        :root {
+            --text-color: #1a1a1a;
+            --container-bg: rgba(255, 255, 255, 0.5);
+            --body-bg: #f4f4f4;
+            --bg-image: url('netlii-bg.avif');
+            --accent: #000;
+        }
+
+        /* Dark Mode variables and background image */
+        [data-theme="dark"] {
+            --text-color: #ffffff;
+            --container-bg: rgba(0, 0, 0, 0.6);
+            --body-bg: #121212;
+            --bg-image: url('netlii-bg 2.avif');
+            --accent: #fff;
+        }
+
         html, body {
             margin: 0;
             padding: 0;
             min-height: 100vh;
             font-family: 'Nunito', sans-serif;
-            background: url('netlii-bg.avif') no-repeat center center fixed;
+            background-color: var(--body-bg);
+            background-image: var(--bg-image);
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-attachment: fixed;
             background-size: cover;
             display: flex;
             flex-direction: column;
             align-items: center;
-            color: #000;
+            color: var(--text-color);
+            transition: background 0.4s ease, color 0.4s ease;
         }
 
-        /* TOP BRANDING (From Sketch) */
-        .header {
-            margin-top: 40px;
-            text-align: center;
+        /* Theme Toggle Styling */
+        .theme-switch-wrapper {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
         }
 
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px; width: 18px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider { background-color: #2196F3; }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        .mode-label {
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-color);
+        }
+
+        .header { margin-top: 40px; text-align: center; }
         .header h1 {
             font-size: 3.5rem;
             margin: 0;
             letter-spacing: 12px;
             font-weight: 900;
             text-transform: uppercase;
+            color: var(--text-color);
         }
 
-        /* SETTINGS CONTAINER */
         .settings-scroll-area {
             width: 90%;
             max-width: 700px;
-            margin: 20px 0 120px 0; /* Space for bottom dock */
+            margin: 20px 0 120px 0;
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
 
-        /* GLASS PANELS */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.4);
+            background: var(--container-bg);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             padding: 25px;
             border-radius: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: background 0.4s ease;
         }
 
-        h2 {
-            margin-top: 0;
-            font-size: 1.5rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
+        h2 { margin-top: 0; font-size: 1.5rem; text-transform: uppercase; letter-spacing: 2px; }
+        p { font-size: 0.9rem; line-height: 1.4; color: var(--text-color); opacity: 0.9; }
 
-        p {
-            font-size: 0.9rem;
-            line-height: 1.4;
-            color: #333;
-        }
-
-        /* INPUTS & BUTTONS (Pill shapes from sketch) */
         input[type="url"], input[type="text"] {
             width: 100%;
             height: 3rem;
             border-radius: 50px;
-            border: 2px solid #000;
+            border: 2px solid var(--text-color);
             padding: 0 20px;
             font-size: 1rem;
             outline: none;
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.9);
+            color: #000;
             box-sizing: border-box;
             margin-bottom: 15px;
         }
 
-        .button-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
         button {
-            background-color: #000;
-            color: #fff;
-            border: 2px solid #000;
+            background-color: var(--text-color);
+            color: var(--body-bg);
+            border: 2px solid var(--text-color);
             border-radius: 50px;
             padding: 10px 20px;
             font-weight: 700;
@@ -116,42 +152,24 @@ html, body {
             font-size: 0.8rem;
         }
 
-        button:hover {
-            background-color: transparent;
-            color: #000;
-        }
+        button:hover { background-color: transparent; color: var(--text-color); }
 
-        /* Checkbox Styling */
-        .checkbox-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: bold;
-        }
-
-        input[type="checkbox"] {
-            width: 20px;
-            height: 200px; /* Custom sizing not standard, usually handled via transform */
-            transform: scale(1.5);
-            cursor: pointer;
-        }
-
-        /* BOTTOM DOCK (From Sketch) */
         .bottom-nav {
             position: fixed;
             bottom: 30px;
             display: flex;
             gap: 40px;
-            background: rgba(0, 0, 0, 0.05);
+            background: var(--container-bg);
             padding: 15px 40px;
             border-radius: 50px;
             backdrop-filter: blur(10px);
             z-index: 100;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .nav-item {
             text-decoration: none;
-            color: #000;
+            color: var(--text-color);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -165,7 +183,7 @@ html, body {
         .circle {
             width: 45px;
             height: 45px;
-            border: 2px solid #000;
+            border: 2px solid var(--text-color);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -174,71 +192,73 @@ html, body {
             margin-bottom: 5px;
             background: white;
         }
-
-        @media screen and (max-width: 600px) {
-            .header h1 { font-size: 2rem; }
-            .bottom-nav { gap: 15px; padding: 10px 20px; }
-        }
     </style>
 </head>
-
 <body>
+
+    <div class="theme-switch-wrapper">
+        <span class="mode-label">Dark Mode</span>
+        <label class="switch">
+            <input type="checkbox" id="theme-toggle">
+            <span class="slider"></span>
+        </label>
+    </div>
 
     <div class="header">
         <h1>NETLII</h1>
     </div>
 
     <div class="settings-scroll-area">
-        
         <div class="glass-panel">
-            <h2>About:Blank</h2>
-            <p>Enter a URL to open in a private about:blank page:</p>
-            <input id="url-target" type="url" placeholder="https://website.com" autocomplete="on" />
+            <h2>About:Blank Proxy</h2>
+            <p>Enter a URL to open in a proxied about:blank page:</p>
+            <input id="url-target" type="url" placeholder="https://website.com" />
             <button id="create">CREATE PAGE</button>
         </div>
 
         <div class="glass-panel">
             <h2>Tab Cloaker</h2>
-            <p>Set a custom title or icon for the browser tab to hide your activity.</p>
-            <input id="userinput" type="text" placeholder="New Title or Image URL" autocomplete="on" />
+            <p>Set a custom title or icon for the browser tab.</p>
+            <input id="userinput" type="text" placeholder="New Title or Image URL" />
             <div class="button-group">
                 <button onclick="changeTabTitle();">SET TITLE</button>
                 <button onclick="changeTabIcon();">SET ICON</button>
                 <button onclick="resetTabSettings();">RESET</button>
             </div>
-            <p id="console-output" style="font-size: 0.7rem; color: #666;"></p>
         </div>
-
-        <div class="glass-panel">
-            <h2>Ads & Performance</h2>
-            <p>Disable ads to improve performance or browsing privacy.</p>
-            <div class="checkbox-row">
-                <input type="checkbox" id="adConsent" name="adConsent">
-                <label for="adConsent">Do not show ads</label>
-            </div>
-        </div>
-
     </div>
 
     <div class="bottom-nav">
-        <a href="/projects.html" class="nav-item">
-            <div class="circle">🕹️</div>
-            <span>GAMES</span>
-        </a>
-        <a href="/yt.html" class="nav-item">
-            <div class="circle">📱</div>
-            <span>YT</span>
-        </a>
-        <a href="/misc.html" class="nav-item">
-            <div class="circle">⚙️</div>
-            <span>SETTINGS</span>
-        </a>
-        <a href="/movietv/" class="nav-item">
-            <div class="circle">🎬</div>
-            <span>MOVIES</span>
-        </a>
+        <a href="./projects" class="nav-item"><div class="circle">🎮</div><span>GAMES</span></a>
+        <a href="./apps" class="nav-item"><div class="circle">📱</div><span>APPS</span></a>
+        <a href="./home" class="nav-item"><div class="circle">🏠</div><span>HOME</span></a>
+        <a href="./movies/" class="nav-item"><div class="circle">🍿</div><span>MOVIES</span></a>
     </div>
 
+    <script>
+        // Theme Toggle Logic
+        const toggleSwitch = document.querySelector('#theme-toggle');
+        
+        function switchTheme(e) {
+            if (e.target.checked) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+            }    
+        }
+
+        toggleSwitch.addEventListener('change', switchTheme, false);
+
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme) {
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            if (currentTheme === 'dark') {
+                toggleSwitch.checked = true;
+            }
+        }
+    </script>
     <script src="/js/misc.js"></script>
     <script src="/js/main.js"></script>
 </body>

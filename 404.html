@@ -1,11 +1,208 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>404 Error (boohoo)</title>
-  </head>
-  <body>
-    <h1>404 Error</h1>
-    <p>Page not found. Whomp whomp :(</p>
-    <a href="/">Go to Homepage</a>
-  </body>
+<html lang="en">
+<head>
+    <title>NETLII | 404 Not Found</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --text-color: #000;
+            --container-bg: rgba(255, 255, 255, 0.4);
+            --body-bg: #f4f4f4;
+            --bg-image: url('netlii-bg.avif');
+            --btn-bg: #000;
+            --btn-text: #fff;
+        }
+
+        /* Dark Mode variables and background image */
+        [data-theme="dark"] {
+            --text-color: #ffffff;
+            --container-bg: rgba(0, 0, 0, 0.6);
+            --body-bg: #121212;
+            --bg-image: url('netlii-bg 2.avif');
+            --btn-bg: #fff;
+            --btn-text: #000;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--body-bg);
+            background-image: var(--bg-image);
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-attachment: fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-color);
+            overflow: hidden;
+            transition: background 0.4s ease, color 0.4s ease;
+        }
+
+        /* Theme Toggle Styling */
+        .theme-switch-wrapper {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px; width: 18px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider { background-color: #2196F3; }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        .mode-label {
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-color);
+        }
+
+        .error-container {
+            background: var(--container-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 60px;
+            border-radius: 40px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            max-width: 500px;
+            width: 90%;
+            transition: background 0.4s ease;
+        }
+
+        h1 {
+            font-size: 8rem;
+            margin: 0;
+            font-weight: 900;
+            letter-spacing: -5px;
+            line-height: 1;
+            text-shadow: 2px 2px 0px rgba(255,255,255,0.1);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-weight: 600;
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+
+        .home-btn {
+            display: inline-block;
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            text-decoration: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 1rem;
+            transition: 0.3s;
+            border: 2px solid var(--btn-bg);
+        }
+
+        .home-btn:hover {
+            background: transparent;
+            color: var(--text-color);
+            transform: translateY(-3px);
+        }
+
+        .bg-text {
+            position: absolute;
+            font-size: 25vw;
+            font-weight: 900;
+            opacity: 0.03;
+            z-index: -1;
+            user-select: none;
+            color: var(--text-color);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="theme-switch-wrapper">
+        <span class="mode-label">Dark Mode</span>
+        <label class="switch">
+            <input type="checkbox" id="theme-toggle">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <div class="bg-text">404</div>
+
+    <div class="error-container">
+        <h1>404</h1>
+        <h2>Lost in Space</h2>
+        <p>The page you're looking for has moved or no longer exists within the NETLII ecosystem.</p>
+        <a href="/" class="home-btn">RETURN HOME</a>
+    </div>
+
+    <script>
+        // Theme Toggle Logic
+        const toggleSwitch = document.querySelector('#theme-toggle');
+        
+        function switchTheme(e) {
+            if (e.target.checked) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+            }    
+        }
+
+        toggleSwitch.addEventListener('change', switchTheme, false);
+
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme) {
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            if (currentTheme === 'dark') {
+                toggleSwitch.checked = true;
+            }
+        }
+    </script>
+</body>
 </html>
